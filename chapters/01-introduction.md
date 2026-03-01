@@ -258,3 +258,10 @@ This introduction chapter established the context, objectives, and methodology f
 ---
 
 [← Back to Main](../README.md) | [Next: Background and Related Work →](02-background.md)
+
+---
+
+## Resources
+
+- Overview of Active Directory Domain Services: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview
+- Securing Active Directory: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices

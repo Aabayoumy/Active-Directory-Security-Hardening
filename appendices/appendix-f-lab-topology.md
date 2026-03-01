@@ -605,3 +605,9 @@ Status: N/A
 ---
 
 [← Back to Main](../README.md)
+
+---
+
+## Resources
+
+- Active Directory logical structure and topology: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/active-directory-logical-structure

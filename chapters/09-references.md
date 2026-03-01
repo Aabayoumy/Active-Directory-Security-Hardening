@@ -250,3 +250,10 @@ This project benefits from the broader security research community. Special ackn
 ---
 
 [← Previous: Conclusion and Future Work](08-conclusion.md) | [Back to Main →](../README.md)
+
+---
+
+## Resources
+
+- Microsoft documentation library: https://learn.microsoft.com/
+- Windows Server documentation: https://learn.microsoft.com/en-us/windows-server/

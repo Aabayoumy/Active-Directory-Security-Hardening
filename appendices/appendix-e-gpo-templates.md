@@ -777,3 +777,10 @@ Get-GPO -All | ForEach-Object {
 ---
 
 [← Back to Main](../README.md)
+
+---
+
+## Resources
+
+- Group Policy overview: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/group-policy
+- Security baseline GPOs: https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-security-baselines

@@ -1144,3 +1144,10 @@ Write-Host "`n[COMPLETE] Security configuration testing finished" -ForegroundCol
 ---
 
 [← Back to Main](../README.md)
+
+---
+
+## Resources
+
+- PowerShell documentation: https://learn.microsoft.com/en-us/powershell/
+- PowerShell logging and transcription: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_logging

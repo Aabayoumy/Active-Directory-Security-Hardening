@@ -851,3 +851,9 @@ This assessment was conducted using a combination of automated scanning and manu
 ---
 
 [← Back to Main](../README.md)
+
+---
+
+## Resources
+
+- Microsoft security assessment tools and guidance: https://learn.microsoft.com/en-us/microsoft-365/security/defender/identify-security-assessment-tools

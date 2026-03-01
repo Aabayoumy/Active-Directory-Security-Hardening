@@ -421,3 +421,9 @@ All changes follow this approval workflow:
 ---
 
 [← Back to Main](../README.md)
+
+---
+
+## Resources
+
+- Active Directory Domain Services overview: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview

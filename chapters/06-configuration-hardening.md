@@ -791,3 +791,12 @@ All changes followed audit-first methodology with documented rollback procedures
 ---
 
 [← Previous: Mitigating Insecure Protocols and Authentication](05-protocol-remediation.md) | [Next: Results and Analysis →](07-results-analysis.md)
+
+---
+
+## Resources
+
+- Password policy settings: https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/account-policies-password-policy
+- Windows LAPS technical reference: https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-technical-reference
+- Advanced security audit policy settings: https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/advanced-security-audit-policy-settings
+- Active Directory Recycle Bin overview: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/ad-recycle-bin

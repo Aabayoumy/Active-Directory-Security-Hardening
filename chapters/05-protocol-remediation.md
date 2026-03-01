@@ -901,3 +901,15 @@ All changes implemented using audit-first methodology to ensure business continu
 ---
 
 [← Previous: Security Configuration Assessment and Risk Analysis](04-risk-assessment.md) | [Next: Configuration Hardening and Security Enhancements →](06-configuration-hardening.md)
+
+---
+
+## Resources
+
+- NTLM configuration and hardening: https://learn.microsoft.com/en-us/windows/security/threat-protection/credentials-protection-and-management/ntlm-security
+- Network security: LAN Manager authentication level: https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-lan-manager-authentication-level
+- LDAP signing requirements: https://learn.microsoft.com/en-us/troubleshoot/windows-server/identity/ldap-signing-requirements
+- LDAP channel binding and signing update: https://support.microsoft.com/help/4520412
+- Turn off multicast name resolution (LLMNR): https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/turn-off-multicast-name-resolution
+- Remote Desktop security best practices: https://learn.microsoft.com/en-us/windows-server/remote/remote-desktop-services/clients/remote-desktop-security
+- WinRM security configuration: https://learn.microsoft.com/en-us/windows/win32/winrm/installation-and-configuration-for-windows-remote-management

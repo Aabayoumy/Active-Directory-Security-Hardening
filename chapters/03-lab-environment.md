@@ -560,3 +560,10 @@ The next chapter presents the security configuration assessment findings from th
 ---
 
 [← Previous: Background and Related Work](02-background.md) | [Next: Security Configuration Assessment and Risk Analysis →](04-risk-assessment.md)
+
+---
+
+## Resources
+
+- AD DS design and planning: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/active-directory-domain-services-design-guide
+- Securing privileged access (tier model): https://learn.microsoft.com/en-us/windows-server/identity/securing-privileged-access/securing-privileged-access-reference-material

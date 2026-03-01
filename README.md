@@ -398,3 +398,11 @@ If you find this project useful, please consider giving it a ⭐!
 ---
 
 *This project demonstrates practical Active Directory hardening skills for cybersecurity professionals, system administrators, and security researchers. Perfect for portfolio demonstration, academic reference, or production implementation planning.*
+
+---
+
+## Resources
+
+- Active Directory Domain Services overview: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview
+- Windows Server security baselines: https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-security-baselines
+- Windows LAPS overview: https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-overview

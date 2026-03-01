@@ -446,3 +446,10 @@ Active Directory remains the foundation of enterprise identity management. Secur
 ---
 
 [← Previous: Results and Analysis](07-results-analysis.md) | [Next: References →](09-references.md)
+
+---
+
+## Resources
+
+- Microsoft Zero Trust guidance: https://learn.microsoft.com/en-us/security/zero-trust/zero-trust-overview
+- Identity security best practices: https://learn.microsoft.com/en-us/security/identity-protection/overview-identity-protection

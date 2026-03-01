@@ -419,3 +419,10 @@ The detection-first methodology successfully balanced security improvement with 
 ---
 
 [← Previous: Configuration Hardening and Security Enhancements](06-configuration-hardening.md) | [Next: Conclusion and Future Work →](08-conclusion.md)
+
+---
+
+## Resources
+
+- Security monitoring and logging: https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/audit-policy-overview
+- SIEM integration guidance: https://learn.microsoft.com/en-us/azure/sentinel/overview

@@ -455,3 +455,10 @@ The next chapter details the laboratory environment and solution methodology use
 ---
 
 [← Previous: Introduction](01-introduction.md) | [Next: Laboratory Environment →](03-lab-environment.md)
+
+---
+
+## Resources
+
+- Windows Server security overview: https://learn.microsoft.com/en-us/windows-server/security/windows-server-security
+- Authentication protocols in Windows: https://learn.microsoft.com/en-us/windows-server/security/kerberos/kerberos-authentication-overview

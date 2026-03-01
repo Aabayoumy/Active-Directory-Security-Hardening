@@ -612,3 +612,10 @@ Get-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkProvide
 ---
 
 [← Back to Main](../README.md)
+
+---
+
+## Resources
+
+- Microsoft security compliance toolkit: https://learn.microsoft.com/en-us/windows/security/threat-protection/security-compliance-toolkit-10
+- Windows Server 2022 security baseline: https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-security-baselines

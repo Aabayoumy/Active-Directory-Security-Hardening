@@ -916,3 +916,10 @@ The next chapters detail the remediation implementation for insecure protocols (
 ---
 
 [← Previous: Laboratory Environment](03-lab-environment.md) | [Next: Mitigating Insecure Protocols and Authentication →](05-protocol-remediation.md)
+
+---
+
+## Resources
+
+- Microsoft security baseline guidance: https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-security-baselines
+- Guidance for securing Active Directory: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/security-best-practices

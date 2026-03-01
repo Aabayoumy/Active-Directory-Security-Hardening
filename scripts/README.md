@@ -282,3 +282,10 @@ For issues or questions:
 **Author**: Ahmed Bayoumy  
 **Date**: February 27, 2026  
 **Version**: 1.0
+
+---
+
+## Resources
+
+- Windows security auditing overview: https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/audit-policy-overview
+- Microsoft security baselines and tools: https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-security-baselines

@@ -909,3 +909,9 @@ Write-Host "4. Leave password blank when configuring service"
 ---
 
 [← Back to Main](../README.md)
+
+---
+
+## Resources
+
+- Group Managed Service Accounts overview: https://learn.microsoft.com/en-us/windows-server/security/group-managed-service-accounts/group-managed-service-accounts-overview

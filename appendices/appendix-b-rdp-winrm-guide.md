@@ -947,3 +947,10 @@ Write-Host "3. Test connectivity from management workstations"
 ---
 
 [← Back to Main](../README.md)
+
+---
+
+## Resources
+
+- Remote Desktop Services security: https://learn.microsoft.com/en-us/windows-server/remote/remote-desktop-services/clients/remote-desktop-security
+- WinRM security configuration: https://learn.microsoft.com/en-us/windows/win32/winrm/installation-and-configuration-for-windows-remote-management
