@@ -1,6 +1,6 @@
 # Chapter 5: Mitigating Insecure Protocols and Authentication
 
-[← Previous: Security Configuration Assessment and Risk Analysis](04-risk-assessment.md) | [Next: Configuration Hardening and Security Enhancements →](06-configuration-hardening.md)
+[← Previous: Security Configuration Assessment and Risk Analysis](04-security-assessment.md) | [Next: Configuration Hardening and Security Enhancements →](06-configuration-hardening.md)
 
 ---
 
@@ -17,14 +17,15 @@ This chapter addresses vulnerabilities related to insecure authentication protoc
 6. **Rollback:** Procedure if issues arise
 
 **Protocols Addressed in This Chapter:**
-- NTLM (NTLMv1/LM ban) - Covered in Chapter 4, H-02
-- RPC Coercion (NTLM outbound restrictions) - Covered in Chapter 4, H-05
-- LDAP Signing and Channel Binding
-- ADCS Web Enrollment (HTTP to HTTPS)
-- LLMNR (Link-Local Multicast Name Resolution)
-- NetBIOS over TCP/IP
-- Remote Desktop Protocol (RDP) hardening
-- Windows Remote Management (WinRM) hardening
+- 5.2.1 NTLM (NTLMv1/LM ban) — Finding H-02
+- 5.2.2 RPC Coercion (NTLM outbound restrictions) — Finding H-05
+- 5.3.1 LDAP Signing — Finding M-03
+- 5.3.2 LDAPS Channel Binding — Finding M-02
+- 5.3.3 ADCS Web Enrollment (HTTP to HTTPS) — Finding M-04
+- 5.4.1 LLMNR (Link-Local Multicast Name Resolution)
+- 5.4.2 NetBIOS over TCP/IP
+- 5.5.1 Remote Desktop Protocol (RDP) hardening
+- 5.5.2 Windows Remote Management (WinRM) hardening
 
 ---
 
@@ -37,7 +38,7 @@ Protocol remediations are implemented in four phases based on risk severity and 
 | Phase | Timeline | Focus | Protocols |
 |-------|----------|-------|-----------|
 | **Phase 1** | 0-7 days | Critical vulnerabilities | NTLM restrictions, RPC coercion |
-| **Phase 2** | 7-14 days | High-priority hardening | LAPS, Print Spooler |
+| **Phase 2** | 7-14 days | High-priority hardening | LAPS, Print Spooler (Chapter 6) |
 | **Phase 3** | 14-30 days | Protocol security | LDAP signing, LDAPS binding, ADCS HTTPS |
 | **Phase 4** | 30-90 days | Additional security | LLMNR, NetBIOS, RDP/WinRM |
 
@@ -50,7 +51,7 @@ Protocol remediations are implemented in four phases based on risk severity and 
 - Contact stakeholders before enforcement
 
 **Pilot OU Testing:**
-- Test changes in LAPS-Pilot OU first
+- Test changes in pilot OU first
 - Monitor for 7 days minimum
 - Expand to additional test systems
 - Deploy domain-wide only after successful pilot
@@ -71,61 +72,220 @@ Protocol remediations are implemented in four phases based on risk severity and 
 
 ### 5.2.1 Ban NTLMv1/LM Authentication
 
-**Finding Reference:** HIGH risk finding H-02 (detailed in Chapter 4)
+**Finding Reference:** HIGH risk finding H-02
 
-This remediation was fully detailed in Chapter 4, Section 4.4 (H-02). Summary:
+**Risk Description:**
 
-**Quick Reference:**
+The domain allows legacy NTLM version 1 and LAN Manager (LM) authentication protocols. These protocols have severe cryptographic weaknesses:
+- LM uses weak DES encryption
+- NTLMv1 vulnerable to pass-the-hash attacks
+- No mutual authentication
+- Susceptible to relay attacks
+- Hashes can be cracked offline
+
+**Business Impact:**
+- Credentials vulnerable to interception and replay
+- Lateral movement enabled after initial compromise
+- Pass-the-hash attacks possible
+- Non-compliance with modern security standards
+
+**Framework References:**
+- ISO 27001:2022 Control 8.5 (Secure Authentication)
+- MITRE ATT&CK: T1557.001 (LLMNR/NBT-NS Poisoning), T1550.002 (Pass the Hash)
+- CIS Benchmark: Requires NTLMv2 minimum (Level 1), Kerberos preferred (Level 2)
+
+**Detection:**
 
 ```powershell
-# Detection
-Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "LmCompatibilityLevel"
+# Check LM Authentication Level (0-5 scale)
+$lmLevel = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" `
+    -Name "LmCompatibilityLevel" -ErrorAction SilentlyContinue
 
-# Audit First (48-72 hours)
+if ($lmLevel) {
+    Write-Host "LmCompatibilityLevel: $($lmLevel.LmCompatibilityLevel)"
+} else {
+    Write-Host "LmCompatibilityLevel: Not Set (Default = 3, allows NTLMv1)"
+}
+
+# Level 0-2: LM and NTLMv1 allowed (VULNERABLE)
+# Level 3: NTLMv2 preferred but NTLMv1 accepted (VULNERABLE)
+# Level 4: NTLMv2 required, refuse LM
+# Level 5: NTLMv2 required, refuse LM and NTLMv1 (SECURE)
+```
+
+**Audit First (CRITICAL - DO THIS FIRST):**
+
+```powershell
+# Enable NTLM auditing to identify systems using NTLMv1
+# Apply via GPO or registry on all DCs
+
+# Enable incoming NTLM traffic auditing
 New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" `
     -Name "AuditReceivingNTLMTraffic" -Value 2 -PropertyType DWord -Force
+# Value 1 = Enable for domain accounts, 2 = Enable for all accounts
 
-# Mitigation
+# Enable NTLM authentication auditing in domain
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" `
+    -Name "RestrictReceivingNTLMTraffic" -Value 1 -PropertyType DWord -Force
+# Value 1 = Audit, 2 = Block
+
+# Monitor Event Viewer for 48-72 hours
+# Event ID 8004: NTLM authentication attempts
+Get-WinEvent -FilterHashtable @{LogName='System';ID=8004,8005,8006} -MaxEvents 100 | 
+    Format-Table TimeCreated, Message -AutoSize
+
+# Also check Security log Event ID 4624 (Logon) - check Authentication Package field
+Get-WinEvent -FilterHashtable @{LogName='Security';ID=4624} -MaxEvents 1000 | 
+    Where-Object {$_.Message -like "*NTLM*"} | 
+    Select-Object TimeCreated, @{N='User';E={$_.Properties[5].Value}}, `
+        @{N='Workstation';E={$_.Properties[11].Value}}
+```
+
+**Impact Assessment:**
+- Monitor NTLM usage for 48-72 hours minimum
+- Identify applications/systems using NTLM
+- Contact application owners before enforcement
+- Document legacy dependencies requiring NTLM
+- Plan exceptions or mitigation (e.g., application updates)
+
+**Mitigation:**
+
+```powershell
+# Set LM Authentication Level to 5 (Send NTLMv2 only, refuse LM & NTLMv1)
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" `
     -Name "LmCompatibilityLevel" -Value 5 -Type DWord
 
-# Verification
-Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "LmCompatibilityLevel"
-# Expected: 5
+# Apply via Group Policy (preferred for domain-wide):
+# Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options
+# "Network security: LAN Manager authentication level" = "Send NTLMv2 response only. Refuse LM & NTLM"
+
+# Force Group Policy update
+gpupdate /force
 ```
 
-Refer to Chapter 4, Section 4.4, Finding H-02 for complete implementation details.
+**Verification:**
+
+```powershell
+Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "LmCompatibilityLevel"
+# Expected: LmCompatibilityLevel = 5
+
+# Verify GPO application
+Get-GPResultantSetOfPolicy -ReportType Html -Path C:\Temp\GPResult.html
+# Check Security Options section for LAN Manager authentication level
+```
+
+**Rollback:**
+
+```powershell
+# Revert to default (level 3)
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" `
+    -Name "LmCompatibilityLevel" -Value 3
+```
 
 ---
 
 ### 5.2.2 Mitigate RPC Coercion Attacks (Restrict NTLM Outbound)
 
-**Finding Reference:** HIGH risk finding H-05 (detailed in Chapter 4)
+**Finding Reference:** HIGH risk finding H-05
 
-This remediation was fully detailed in Chapter 4, Section 4.4 (H-05). Summary:
+**Risk Description:**
 
-**Quick Reference:**
+Domain Controllers expose RPC interfaces that can be abused to force authentication:
+- **PetitPotam (CVE-2021-36942):** Forces DC to authenticate to attacker system
+- Combined with NTLM relay to ADCS, enables certificate-based attacks
+- Can lead to complete domain compromise
+
+**Business Impact:**
+- Domain Controllers can be forced to authenticate to attacker-controlled systems
+- NTLM relay to Certificate Authority enables attacker to obtain DC certificates
+- Potential for complete domain takeover
+- Critical infrastructure vulnerability
+
+**Framework References:**
+- CVE-2021-36942 (PetitPotam)
+- MITRE ATT&CK: T1187 (Forced Authentication)
+- Microsoft Security Advisory
+- ISO 27001:2022 Control 8.8 (Technical Vulnerabilities)
+
+**Detection:**
 
 ```powershell
-# Detection
-Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" `
-    -Name "RestrictSendingNTLMTraffic"
+# Check NTLM outbound restrictions on DCs (should block outbound NTLM)
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
+foreach ($dc in $DCs) {
+    Invoke-Command -ComputerName $dc -ScriptBlock {
+        Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" `
+            -Name "RestrictSendingNTLMTraffic" -ErrorAction SilentlyContinue
+    }
+}
 
-# Audit First (48-72 hours)
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" `
-    -Name "RestrictSendingNTLMTraffic" -Value 1 -Type DWord
-
-# Mitigation
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" `
-    -Name "RestrictSendingNTLMTraffic" -Value 2 -Type DWord
-
-# Verification
-Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" `
-    -Name "RestrictSendingNTLMTraffic"
-# Expected: 2
+# If not set or value < 2, DCs can send outbound NTLM (VULNERABLE)
 ```
 
-Refer to Chapter 4, Section 4.4, Finding H-05 for complete implementation details.
+**Audit First:**
+
+```powershell
+# Enable NTLM outbound auditing on DCs
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
+foreach ($dc in $DCs) {
+    Invoke-Command -ComputerName $dc -ScriptBlock {
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" `
+            -Name "RestrictSendingNTLMTraffic" -Value 1 -Type DWord
+        # Value 1 = Audit, Value 2 = Block
+    }
+}
+
+# Monitor for 48-72 hours
+Get-WinEvent -FilterHashtable @{LogName='System';ID=4001} -MaxEvents 100
+```
+
+**Impact Assessment:**
+- Monitor for legitimate NTLM outbound connections from DCs
+- Typically NONE expected (DCs should not initiate NTLM authentication)
+- 48-72 hour monitoring period
+- Any outbound NTLM from DC is suspicious and warrants investigation
+
+**Mitigation:**
+
+```powershell
+# Block NTLM outbound traffic from DCs
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
+foreach ($dc in $DCs) {
+    Invoke-Command -ComputerName $dc -ScriptBlock {
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" `
+            -Name "RestrictSendingNTLMTraffic" -Value 2 -Type DWord
+    }
+}
+
+# Or via GPO on Domain Controllers OU:
+# Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options
+# "Network security: Restrict NTLM: Outgoing NTLM traffic to remote servers" = "Deny all"
+```
+
+**Verification:**
+
+```powershell
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
+foreach ($dc in $DCs) {
+    Invoke-Command -ComputerName $dc -ScriptBlock {
+        Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" `
+            -Name "RestrictSendingNTLMTraffic"
+    }
+}
+# Expected: RestrictSendingNTLMTraffic = 2 (Block)
+```
+
+**Rollback:**
+
+```powershell
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
+foreach ($dc in $DCs) {
+    Invoke-Command -ComputerName $dc -ScriptBlock {
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0" `
+            -Name "RestrictSendingNTLMTraffic" -Value 0
+    }
+}
+```
 
 ---
 
@@ -179,7 +339,7 @@ Monitor audit logs for 48-72 hours:
 
 ```powershell
 # Require LDAP signing on all Domain Controllers
-$DCs = @("DC01", "DC02")
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
 foreach ($dc in $DCs) {
     Invoke-Command -ComputerName $dc -ScriptBlock {
         Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" `
@@ -199,6 +359,7 @@ gpupdate /force
 **Verification:**
 
 ```powershell
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
 foreach ($dc in $DCs) {
     Invoke-Command -ComputerName $dc -ScriptBlock {
         Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" `
@@ -215,6 +376,7 @@ Get-WinEvent -FilterHashtable @{LogName='Directory Service';ID=2887,2888} -MaxEv
 **Rollback:**
 
 ```powershell
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
 foreach ($dc in $DCs) {
     Invoke-Command -ComputerName $dc -ScriptBlock {
         Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters" `
@@ -272,6 +434,7 @@ Get-WinEvent -FilterHashtable @{LogName='Directory Service';ID=3039,3040} `
 
 ```powershell
 # Enable LDAPS channel binding (start with value 1 for compatibility)
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
 foreach ($dc in $DCs) {
     Invoke-Command -ComputerName $dc -ScriptBlock {
         Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\NTDS\Parameters" `
@@ -288,6 +451,7 @@ gpupdate /force
 **Verification:**
 
 ```powershell
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
 foreach ($dc in $DCs) {
     Invoke-Command -ComputerName $dc -ScriptBlock {
         Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\NTDS\Parameters" `
@@ -303,6 +467,7 @@ Get-WinEvent -FilterHashtable @{LogName='Directory Service';ID=3039,3040} -MaxEv
 **Rollback:**
 
 ```powershell
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
 foreach ($dc in $DCs) {
     Invoke-Command -ComputerName $dc -ScriptBlock {
         Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\NTDS\Parameters" `
@@ -453,7 +618,7 @@ Get-WinEvent -FilterHashtable @{LogName='System';ID=1014,1015} -MaxEvents 100
 
 **Impact Assessment:**
 
-- Test in LAPS-Pilot OU for 7 days
+- Test in pilot OU for 7 days
 - Monitor helpdesk tickets for name resolution issues
 - Legacy applications may rely on LLMNR (rare)
 - Most environments should have no issues
@@ -851,38 +1016,27 @@ $PSSessionOption = New-PSSessionOption -UseSSL -SkipCACheck:$false -SkipCNCheck:
 
 This chapter detailed the following protocol security remediations:
 
-| Protocol/Service | Vulnerability | Mitigation | Timeline |
-|------------------|---------------|------------|----------|
-| NTLM | NTLMv1/LM enabled | Ban NTLMv1, enforce NTLMv2 minimum | 0-7 days |
-| RPC | Coercion attacks | Block NTLM outbound from DCs | 0-7 days |
-| LDAP | Unsigned binds | Require LDAP signing | 14-21 days |
-| LDAPS | No channel binding | Enforce channel binding | 14-21 days |
-| ADCS | HTTP enrollment | HTTPS-only enrollment | 14-21 days |
-| LLMNR | Name poisoning | Disable LLMNR | 30-60 days |
-| NetBIOS | Name poisoning | Disable NetBIOS over TCP/IP | 30-60 days |
-| RDP | Insecure config | NLA, High encryption, Restricted Admin | 30-60 days |
-| WinRM | HTTP listeners | HTTPS-only, certificate auth | 30-60 days |
+| Protocol/Service | Finding | Vulnerability | Mitigation | Timeline |
+|------------------|---------|---------------|------------|----------|
+| NTLM | H-02 | NTLMv1/LM enabled | Ban NTLMv1, enforce NTLMv2 minimum | 0-7 days |
+| RPC | H-05 | Coercion attacks | Block NTLM outbound from DCs | 0-7 days |
+| LDAP | M-03 | Unsigned binds | Require LDAP signing | 14-21 days |
+| LDAPS | M-02 | No channel binding | Enforce channel binding | 14-21 days |
+| ADCS | M-04 | HTTP enrollment | HTTPS-only enrollment | 14-21 days |
+| LLMNR | — | Name poisoning | Disable LLMNR | 30-60 days |
+| NetBIOS | — | Name poisoning | Disable NetBIOS over TCP/IP | 30-60 days |
+| RDP | — | Insecure config | NLA, High encryption, Restricted Admin | 30-60 days |
+| WinRM | — | HTTP listeners | HTTPS-only, certificate auth | 30-60 days |
 
-### Audit-First Methodology Success
+### Audit-First Methodology
 
 All protocol remediations followed the audit-first approach:
-1. ✓ Detection scripts confirmed vulnerabilities
-2. ✓ Audit mode enabled to monitor business impact
-3. ✓ Impact assessment conducted (48-72 hours typical)
-4. ✓ Mitigation implemented with stakeholder approval
-5. ✓ Verification scripts confirmed successful remediation
-6. ✓ Rollback procedures documented and tested
-
-### PowerShell Automation
-
-Complete PowerShell implementation provided for:
-- Detection (confirm vulnerability exists)
-- Audit enablement (monitor usage)
-- Mitigation (implement fix)
-- Verification (confirm success)
-- Rollback (restore if needed)
-
-All scripts can be adapted for larger environments using PowerShell remoting and Group Policy.
+1. Detection scripts confirmed vulnerabilities
+2. Audit mode enabled to monitor business impact
+3. Impact assessment conducted (48-72 hours typical)
+4. Mitigation implemented with stakeholder approval
+5. Verification scripts confirmed successful remediation
+6. Rollback procedures documented and tested
 
 ---
 
@@ -900,7 +1054,7 @@ All changes implemented using audit-first methodology to ensure business continu
 
 ---
 
-[← Previous: Security Configuration Assessment and Risk Analysis](04-risk-assessment.md) | [Next: Configuration Hardening and Security Enhancements →](06-configuration-hardening.md)
+[← Previous: Security Configuration Assessment and Risk Analysis](04-security-assessment.md) | [Next: Configuration Hardening and Security Enhancements →](06-configuration-hardening.md)
 
 ---
 

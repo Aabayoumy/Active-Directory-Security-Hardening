@@ -12,17 +12,17 @@ This chapter addresses security hardening through configuration changes, securit
 - Detection → Audit → Impact Assessment → Mitigation → Verification → Rollback
 
 **Topics Covered:**
-- Print Spooler service disabling (covered in Chapter 4, H-04)
-- Password policy strengthening (covered in Chapter 4, H-01)
-- Windows LAPS deployment (covered in Chapter 4, H-03)
-- Advanced audit policy implementation
-- Privileged account protection
-- AD Recycle Bin enablement
-- UNC hardened paths
-- Group Managed Service Accounts (gMSA)
-- PowerShell logging
-- Schema Admins group management
-- AD Sites and Subnets configuration
+- 6.2.1 Print Spooler service disabling — Finding H-04
+- 6.2.2 Password policy strengthening — Finding H-01
+- 6.2.3 Windows LAPS deployment — Finding H-03
+- 6.3.1 Advanced audit policy implementation — Finding M-01
+- 6.4.1 Admin delegation protection — Finding M-06
+- 6.4.2 Schema Admins group management — Finding M-07
+- 6.5.1 AD Recycle Bin enablement — Finding L-01
+- 6.5.2 UNC hardened paths — Finding M-08
+- 6.5.3 AD Sites and Subnets — Finding M-05
+- 6.6.1 PowerShell logging
+- 6.6.2 Group Managed Service Accounts (gMSA)
 
 ---
 
@@ -53,47 +53,173 @@ All configuration changes require:
 
 ### 6.2.1 Disable Print Spooler on Domain Controllers
 
-**Finding Reference:** HIGH risk finding H-04 (detailed in Chapter 4)
+**Finding Reference:** HIGH risk finding H-04
 
-This remediation was fully detailed in Chapter 4, Section 4.4 (H-04). Summary:
+**Risk Description:**
 
-**Quick Reference:**
+The Windows Print Spooler service is running on Domain Controllers despite no printing requirements. This creates unnecessary attack surface:
+- **PrintNightmare (CVE-2021-34527):** Remote code execution vulnerability
+- **PrintDemon:** Local privilege escalation
+- Unnecessary service increases attack surface
+- Domain Controllers rarely require printing functionality
+
+**Business Impact:**
+- Remote code execution risk on critical infrastructure
+- Privilege escalation to SYSTEM on DCs
+- Potential for domain compromise
+- Violation of principle of least functionality
+
+**Framework References:**
+- CVE-2021-34527 (PrintNightmare)
+- MITRE ATT&CK: T1187 (Forced Authentication)
+- CIS Benchmark: Recommends disabling unnecessary services
+- ISO 27001:2022 Control 8.8 (Technical Vulnerabilities)
+
+**Detection:**
 
 ```powershell
-# Detection
-Get-Service -Name Spooler -ComputerName DC01,DC02
+# Check Print Spooler service status on Domain Controllers
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
+foreach ($dc in $DCs) {
+    Get-Service -Name Spooler -ComputerName $dc | 
+        Select-Object PSComputerName, Name, Status, StartType
+}
+```
 
-# Mitigation
-$DCs = @("DC01","DC02")
-foreach($dc in $DCs){
+Expected vulnerable output:
+```
+PSComputerName Name    Status  StartType
+-------------- ----    ------  ---------
+DC01           Spooler Running Automatic
+DC02           Spooler Running Automatic
+```
+
+**Audit First:**
+
+```powershell
+# Check if any print jobs or printers configured on DCs
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
+foreach ($dc in $DCs) {
+    Write-Host "Checking $dc for printers..."
+    Get-Printer -ComputerName $dc -ErrorAction SilentlyContinue
+    Get-PrintJob -ComputerName $dc -ErrorAction SilentlyContinue
+}
+
+# Verify no DC requires printing functionality (typical: none needed)
+# Audit period: Immediate (no business impact expected)
+```
+
+**Impact Assessment:**
+- Domain Controllers should NOT have printing requirements
+- Verify no print management tools depend on Spooler service
+- Immediate remediation recommended (no anticipated impact)
+
+**Mitigation:**
+
+```powershell
+# Disable Print Spooler on all Domain Controllers
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
+foreach ($dc in $DCs) {
     Invoke-Command -ComputerName $dc -ScriptBlock {
-        Stop-Service -Name Spooler -Force
+        Stop-Service -Name Spooler -Force -ErrorAction SilentlyContinue
         Set-Service -Name Spooler -StartupType Disabled
     }
 }
 
-# Verification
-Get-Service -Name Spooler -ComputerName DC01,DC02 | Select-Object PSComputerName,Status,StartType
-# Expected: Status=Stopped, StartType=Disabled
+# Or via Group Policy (Domain Controllers OU):
+# Computer Configuration → Policies → Windows Settings → Security Settings → System Services
+# "Print Spooler" = Disabled
 ```
 
-Refer to Chapter 4, Section 4.4, Finding H-04 for complete implementation details.
+**Verification:**
+
+```powershell
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
+foreach ($dc in $DCs) {
+    Get-Service -Name Spooler -ComputerName $dc | 
+        Select-Object PSComputerName, Status, StartType
+}
+# Expected: Status = Stopped, StartType = Disabled
+```
+
+**Rollback:**
+
+```powershell
+$DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
+foreach ($dc in $DCs) {
+    Set-Service -Name Spooler -StartupType Manual -ComputerName $dc
+    Start-Service -Name Spooler -ComputerName $dc
+}
+```
 
 ---
 
 ### 6.2.2 Strengthen Password Policy
 
-**Finding Reference:** HIGH risk finding H-01 (detailed in Chapter 4)
+**Finding Reference:** HIGH risk finding H-01
 
-This remediation was fully detailed in Chapter 4, Section 4.4 (H-01). Summary:
+**Risk Description:**
 
-**Quick Reference:**
+The domain password policy requires only 7-character passwords, significantly below modern security standards. Short passwords are susceptible to:
+- Brute force attacks
+- Dictionary attacks
+- Rainbow table attacks
+- Credential stuffing
+
+**Business Impact:**
+- Increased risk of account compromise
+- Easier lateral movement after initial breach
+- Non-compliance with most security frameworks (NIST, ISO 27001, PCI DSS)
+
+**Framework References:**
+- ISO 27001:2022 Controls 5.17, 5.18
+- MITRE ATT&CK: T1201 (Password Policy Discovery)
+- NIST SP 800-63B: Recommends minimum 8 characters (12+ for admin accounts)
+
+**Detection:**
 
 ```powershell
-# Detection
-Get-ADDefaultDomainPasswordPolicy
+# Check current domain password policy
+Get-ADDefaultDomainPasswordPolicy | Select-Object `
+    MinPasswordLength, 
+    PasswordHistoryCount, 
+    ComplexityEnabled, 
+    MaxPasswordAge, 
+    MinPasswordAge, 
+    LockoutThreshold
+```
 
-# Mitigation
+Expected vulnerable output:
+```
+MinPasswordLength    : 7
+PasswordHistoryCount : 24
+ComplexityEnabled    : True
+MaxPasswordAge       : 42.00:00:00
+MinPasswordAge       : 1.00:00:00
+LockoutThreshold     : 0
+```
+
+**Audit First:**
+
+```powershell
+# Identify users with potentially weak passwords (requires password auditing tool)
+# Review fine-grained password policies if any
+Get-ADFineGrainedPasswordPolicy -Filter *
+
+# Notify users 48 hours before policy change
+# Prepare helpdesk for increased password reset requests
+```
+
+**Impact Assessment:**
+- Users with passwords shorter than 12 characters must change at next logon
+- Communicate change 48 hours in advance
+- Prepare helpdesk resources
+- Consider phased rollout by OU
+
+**Mitigation:**
+
+```powershell
+# Set minimum password length to 12 characters
 Set-ADDefaultDomainPasswordPolicy -Identity "contoso.com" `
     -MinPasswordLength 12 `
     -PasswordHistoryCount 24 `
@@ -101,44 +227,166 @@ Set-ADDefaultDomainPasswordPolicy -Identity "contoso.com" `
     -MaxPasswordAge (New-TimeSpan -Days 90) `
     -MinPasswordAge (New-TimeSpan -Days 1) `
     -LockoutThreshold 10 `
-    -LockoutDuration (New-TimeSpan -Minutes 15)
-
-# Verification
-Get-ADDefaultDomainPasswordPolicy | Select-Object MinPasswordLength,LockoutThreshold
-# Expected: MinPasswordLength=12, LockoutThreshold=10
+    -LockoutDuration (New-TimeSpan -Minutes 15) `
+    -LockoutObservationWindow (New-TimeSpan -Minutes 15)
 ```
 
-Refer to Chapter 4, Section 4.4, Finding H-01 for complete implementation details.
+**Verification:**
+
+```powershell
+Get-ADDefaultDomainPasswordPolicy | Select-Object MinPasswordLength, LockoutThreshold
+# Expected: MinPasswordLength = 12, LockoutThreshold = 10
+```
+
+**Rollback:**
+
+```powershell
+Set-ADDefaultDomainPasswordPolicy -Identity "contoso.com" -MinPasswordLength 7 -LockoutThreshold 0
+```
 
 ---
 
 ### 6.2.3 Deploy Windows LAPS
 
-**Finding Reference:** HIGH risk finding H-03 (detailed in Chapter 4)
+**Finding Reference:** HIGH risk finding H-03
 
-This remediation was fully detailed in Chapter 4, Section 4.4 (H-03). Summary:
+**Risk Description:**
 
-**Quick Reference:**
+Windows Local Administrator Password Solution (LAPS) is not configured. Without LAPS:
+- Local administrator passwords are static across workstations
+- Same password on multiple machines enables lateral movement
+- Compromising one workstation exposes entire fleet
+- No auditing of local administrator password access
+- Manual password management is error-prone
 
-Windows Server 2022 includes native Windows LAPS (no separate installation required).
+**Business Impact:**
+- Single compromised workstation allows lateral movement
+- Difficult to rotate local admin passwords manually
+- No audit trail for password usage
+- Incident response challenges
+
+**Framework References:**
+- ISO 27001:2022 Controls 5.17 (Authentication Information), 5.18 (Access Rights)
+- MITRE ATT&CK: T1078.003 (Valid Accounts: Local Accounts)
+- CIS Control 5: Account Management
+
+**Detection:**
 
 ```powershell
-# Detection
-Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" -ErrorAction SilentlyContinue
+# Check if Windows LAPS is configured (native to Windows Server 2022)
+# Check for LAPS registry settings
+Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" `
+    -ErrorAction SilentlyContinue
 
-# Mitigation (configure via GPO or PowerShell)
+# Check AD schema for LAPS attributes (Windows LAPS uses same attributes as legacy LAPS)
+Get-ADObject "CN=ms-Mcs-AdmPwd,CN=Schema,CN=Configuration,DC=contoso,DC=com" `
+    -ErrorAction SilentlyContinue
+
+# Check if any computers have LAPS passwords stored
+Get-ADComputer -Filter * -Properties ms-Mcs-AdmPwd | 
+    Where-Object {$_."ms-Mcs-AdmPwd" -ne $null} | 
+    Select-Object Name, ms-Mcs-AdmPwd
+```
+
+Expected vulnerable output: No LAPS configuration found
+
+**Audit First:**
+
+```powershell
+# Pilot deployment on test OU first
+# Create test OU
+New-ADOrganizationalUnit -Name "LAPS-Pilot" -Path "DC=contoso,DC=com"
+
+# Move 2-3 test computers to pilot OU
+Get-ADComputer "WS01" | Move-ADObject -TargetPath "OU=LAPS-Pilot,DC=contoso,DC=com"
+
+# Monitor for 7 days:
+# - Verify local admin access still works
+# - Confirm password rotation occurs
+# - Test password retrieval process
+```
+
+**Impact Assessment:**
+- Test on pilot OU for 7 days
+- Verify local admin access functionality
+- Confirm password rotation successful
+- No impact on domain users (only local admin account affected)
+- Plan communication with IT support staff
+
+**Mitigation:**
+
+**Note:** Windows Server 2022 includes native Windows LAPS (built-in). No separate installation required.
+
+```powershell
+# Configure Windows LAPS via Group Policy:
+# Computer Configuration → Administrative Templates → System → LAPS
+
+# 1. Enable Password Backup
+# Setting: "Configure password backup directory"
+# Value: "Backup the password to Active Directory only"
+
+# 2. Configure Password Settings
+# Setting: "Password Settings"
+# - Password Complexity: 4 (Large + small + numbers + specials)
+# - Password Length: 14
+# - Password Age (Days): 30
+
+# 3. Set Administrator Account Name
+# Setting: "Name of administrator account to manage"
+# Value: "Administrator"
+
+# Alternatively, configure via PowerShell (on target computers):
 New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" `
     -Name "BackupDirectory" -Value 2 -PropertyType DWord -Force
+# Value: 1 = Azure AD only, 2 = Active Directory only, 3 = Both
+
+New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" `
+    -Name "PasswordComplexity" -Value 4 -PropertyType DWord -Force
+
 New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" `
     -Name "PasswordLength" -Value 14 -PropertyType DWord -Force
+
 New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" `
     -Name "PasswordAgeDays" -Value 30 -PropertyType DWord -Force
 
-# Verification
-Get-ADComputer "WS01" -Properties ms-Mcs-AdmPwd,ms-Mcs-AdmPwdExpirationTime
+# Set AD permissions for computers to update their own password
+$ou = "OU=LAPS-Pilot,DC=contoso,DC=com"
+$computers = Get-ADComputer -Filter * -SearchBase $ou
+foreach ($computer in $computers) {
+    $acl = Get-Acl "AD:$($computer.DistinguishedName)"
+    # Grant SELF permission to write ms-Mcs-AdmPwd attribute
+    # (Detailed ACL configuration omitted for brevity - see full implementation guide)
+}
 ```
 
-Refer to Chapter 4, Section 4.4, Finding H-03 for complete implementation details including AD permissions.
+**Verification:**
+
+```powershell
+# Check LAPS configuration on a computer
+Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS"
+
+# Check if LAPS password is being stored in AD
+Get-ADComputer "WS01" -Properties ms-Mcs-AdmPwd, ms-Mcs-AdmPwdExpirationTime | 
+    Select-Object Name, ms-Mcs-AdmPwd, `
+        @{N='PasswordExpires';E={[datetime]::FromFileTime($_.'ms-Mcs-AdmPwdExpirationTime')}}
+
+# Force password rotation (for testing)
+Invoke-Command -ComputerName WS01 -ScriptBlock {
+    gpupdate /force
+}
+```
+
+**Rollback:**
+
+```powershell
+# Disable Windows LAPS via GPO
+# Computer Configuration → Administrative Templates → System → LAPS
+# Set "Configure password backup directory" to "Disabled"
+
+# Or via registry:
+Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" `
+    -Name "BackupDirectory" -Force -ErrorAction SilentlyContinue
+```
 
 ---
 
@@ -412,26 +660,52 @@ Add-ADGroupMember "Schema Admins" -Members "Administrator"
 
 ### 6.5.1 Enable AD Recycle Bin
 
-**Finding Reference:** LOW risk finding L-01 (detailed in Chapter 4)
+**Finding Reference:** LOW risk finding L-01
 
-This remediation was detailed in Chapter 4, Section 4.6 (L-01). Summary:
+**Risk Description:**
 
-**Quick Reference:**
+Active Directory Recycle Bin is not enabled, limiting recovery options for accidentally deleted objects.
+
+**Impact:**
+- Deleted AD objects difficult to restore
+- Requires authoritative restore from backup (downtime)
+- Some attributes lost even with tombstone reanimation
+
+**Framework References:**
+- ISO 27001:2022 Control 8.13 (Information Backup)
+- Best practice for directory resilience
+
+**Detection:**
 
 ```powershell
-# Detection
 (Get-ADOptionalFeature -Filter 'name -like "Recycle Bin Feature"').EnabledScopes
-
-# Mitigation (IRREVERSIBLE)
-Enable-ADOptionalFeature -Identity "Recycle Bin Feature" `
-    -Scope ForestOrConfigurationSet -Target "contoso.com" -Confirm:$false
-
-# Verification
-(Get-ADOptionalFeature -Filter 'name -like "Recycle Bin Feature"').EnabledScopes
-# Should return: DC=contoso,DC=com
+# If empty, Recycle Bin is not enabled
 ```
 
-**Important:** This is a one-way operation and cannot be reversed. Requires Windows Server 2008 R2+ forest functional level.
+**Audit:**
+
+```powershell
+# Review forest functional level requirements (Windows Server 2008 R2+)
+(Get-ADForest).ForestMode
+# WARNING: Enabling AD Recycle Bin is a one-way, irreversible operation
+```
+
+**Mitigation:**
+
+```powershell
+# Enable AD Recycle Bin (IRREVERSIBLE - cannot be disabled)
+Enable-ADOptionalFeature -Identity "Recycle Bin Feature" `
+    -Scope ForestOrConfigurationSet -Target "contoso.com" -Confirm:$false
+```
+
+**Verification:**
+
+```powershell
+(Get-ADOptionalFeature -Filter 'name -like "Recycle Bin Feature"').EnabledScopes
+# Should return forest DN: DC=contoso,DC=com
+```
+
+**Impact Assessment:** No negative impact, improves recovery capability. One-way operation (cannot be reversed).
 
 ---
 
@@ -745,34 +1019,34 @@ Remove-ADServiceAccount -Identity "svc-webapp-gmsa" -Confirm:$false
 
 This chapter detailed the following configuration hardening measures:
 
-| Configuration | Risk Level | Implementation | Status |
-|---------------|-----------|----------------|--------|
-| Print Spooler disabled | HIGH | Chapter 4, H-04 | Critical |
-| Strong password policy | HIGH | Chapter 4, H-01 | Critical |
-| LAPS deployment | HIGH | Chapter 4, H-03 | Critical |
-| Advanced audit policies | MEDIUM | auditpol / GPO | High priority |
-| Admin delegation protection | MEDIUM | AccountNotDelegated flag | High priority |
-| Schema Admins empty | MEDIUM | JIT access model | High priority |
-| UNC hardened paths | MEDIUM | Registry / GPO | High priority |
-| AD Sites and Subnets | MEDIUM | AD topology | High priority |
-| AD Recycle Bin | LOW | Optional feature | Enhancement |
-| PowerShell logging | Enhancement | Script block logging | Enhancement |
-| gMSA implementation | Enhancement | Service account security | Enhancement |
+| Configuration | Finding | Risk Level | Implementation | Timeline |
+|---------------|---------|-----------|----------------|----------|
+| Print Spooler disabled | H-04 | HIGH | GPO System Services | 0-14 days |
+| Strong password policy | H-01 | HIGH | Default Domain Policy | 0-14 days |
+| LAPS deployment | H-03 | HIGH | GPO + AD schema | 0-14 days |
+| Advanced audit policies | M-01 | MEDIUM | auditpol / GPO | 14-30 days |
+| Admin delegation protection | M-06 | MEDIUM | AccountNotDelegated flag | 14-30 days |
+| Schema Admins empty | M-07 | MEDIUM | JIT access model | 14-30 days |
+| AD Recycle Bin | L-01 | LOW | Optional feature | 30-90 days |
+| UNC hardened paths | M-08 | MEDIUM | Registry / GPO | 30-90 days |
+| AD Sites and Subnets | M-05 | MEDIUM | AD topology | 30-90 days |
+| PowerShell logging | — | Enhancement | Script block logging | 30-90 days |
+| gMSA implementation | — | Enhancement | Service account security | 30-90 days |
 
 ### Compliance Achievements
 
 **ISO 27001:2022 Controls:**
-- ✓ Control 5.17 (Authentication): Password policy, LAPS
-- ✓ Control 5.18 (Access Rights): Admin protection, delegation
-- ✓ Control 8.2 (Privileged Access): Admin account hardening
-- ✓ Control 8.8 (Technical Vulnerabilities): Service hardening
-- ✓ Control 8.13 (Information Backup): AD Recycle Bin
-- ✓ Control 8.15 (Logging): Advanced audit policies, PowerShell logging
+- Control 5.17 (Authentication): Password policy, LAPS
+- Control 5.18 (Access Rights): Admin protection, delegation
+- Control 8.2 (Privileged Access): Admin account hardening
+- Control 8.8 (Technical Vulnerabilities): Service hardening
+- Control 8.13 (Information Backup): AD Recycle Bin
+- Control 8.15 (Logging): Advanced audit policies, PowerShell logging
 
 **MITRE ATT&CK Mitigations:**
-- ✓ T1078.003 (Local Accounts): LAPS, gMSA
-- ✓ T1187 (Forced Authentication): Print Spooler disabled
-- ✓ Credential Access techniques: Protected accounts, audit logging
+- T1078.003 (Local Accounts): LAPS, gMSA
+- T1187 (Forced Authentication): Print Spooler disabled
+- Credential Access techniques: Protected accounts, audit logging
 
 ---
 
@@ -800,3 +1074,5 @@ All changes followed audit-first methodology with documented rollback procedures
 - Windows LAPS technical reference: https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-technical-reference
 - Advanced security audit policy settings: https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/advanced-security-audit-policy-settings
 - Active Directory Recycle Bin overview: https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/ad-recycle-bin
+- Print Spooler service security: https://learn.microsoft.com/en-us/windows-server/security/windows-services/security-guidelines-for-disabling-system-services-in-windows-server
+- Group Managed Service Accounts: https://learn.microsoft.com/en-us/windows-server/security/group-managed-service-accounts/group-managed-service-accounts-overview
