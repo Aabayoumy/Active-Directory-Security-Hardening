@@ -1,6 +1,6 @@
 # Chapter 3: Laboratory Environment
 
-[← Previous: Background and Related Work](02-background.md) | [Next: Security Configuration Assessment and Risk Analysis →](04-risk-assessment.md)
+[← Previous: Background and Related Work](02-background.md) | [Next: Security Configuration Assessment and Risk Analysis →](/04-security-assessment.md)
 
 ---
 
