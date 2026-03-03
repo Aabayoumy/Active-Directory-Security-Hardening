@@ -28,7 +28,7 @@ This project focuses on **configuration assessment and hardening** of a freshly 
 
 ## 1.2 Problem Statement
 
-Active Directory installations, even on the latest Windows Server 2022 platform, ship with default configurations that prioritize backward compatibility over security. These defaults create a significant attack surface:
+Active Directory installations, even on the latest updated Windows Server 2022 platform, ship with default configurations that prioritize backward compatibility over security. These defaults create a significant attack surface:
 
 ### Default Configuration Risks
 
