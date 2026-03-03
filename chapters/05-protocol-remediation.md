@@ -113,7 +113,17 @@ if ($lmLevel) {
 # Level 5: NTLMv2 required, refuse LM and NTLMv1 (SECURE)
 ```
 
-**Audit First (CRITICAL - DO THIS FIRST):**
+**Audit First:**
+
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Controllers OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options | Network security: Restrict NTLM: Audit Incoming NTLM Traffic | Enable auditing for domain accounts |
+
+**PowerShell Alternative:**
 
 ```powershell
 # Enable NTLM auditing to identify systems using NTLMv1
@@ -149,6 +159,16 @@ Get-WinEvent -FilterHashtable @{LogName='Security';ID=4624} -MaxEvents 1000 |
 - Plan exceptions or mitigation (e.g., application updates)
 
 **Mitigation:**
+
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Environment OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options | Network security: LAN Manager authentication level | Send NTLMv2 response only. Refuse LM & NTLM |
+
+**PowerShell Alternative:**
 
 ```powershell
 # Set LM Authentication Level to 5 (Send NTLMv2 only, refuse LM & NTLMv1)
@@ -224,6 +244,16 @@ foreach ($dc in $DCs) {
 
 **Audit First:**
 
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Controllers OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options | Network security: Restrict NTLM: Outgoing NTLM traffic to remote servers | Audit all |
+
+**PowerShell Alternative:**
+
 ```powershell
 # Enable NTLM outbound auditing on DCs
 $DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
@@ -246,6 +276,16 @@ Get-WinEvent -FilterHashtable @{LogName='System';ID=4001} -MaxEvents 100
 - Any outbound NTLM from DC is suspicious and warrants investigation
 
 **Mitigation:**
+
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Controllers OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options | Network security: Restrict NTLM: Outgoing NTLM traffic to remote servers | Deny all |
+
+**PowerShell Alternative:**
 
 ```powershell
 # Block NTLM outbound traffic from DCs
@@ -312,6 +352,16 @@ Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters"
 
 **Audit First:**
 
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Controllers OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options | Domain controller: LDAP server signing requirements | None (Enable Diagnostics Registry instead for auditing) |
+
+**PowerShell Alternative:**
+
 ```powershell
 # Enable LDAP diagnostics to identify clients using unsigned LDAP
 reg add "HKLM\System\CurrentControlSet\Services\NTDS\Diagnostics" `
@@ -336,6 +386,16 @@ Monitor audit logs for 48-72 hours:
 - Plan exceptions or application updates
 
 **Mitigation:**
+
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Controllers OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options | Domain controller: LDAP server signing requirements | Require signing |
+
+**PowerShell Alternative:**
 
 ```powershell
 # Require LDAP signing on all Domain Controllers
@@ -409,6 +469,16 @@ Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\NTDS\Parameters"
 
 **Audit First:**
 
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Controllers OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options | Domain controller: LDAP server channel binding token requirements | Never (Enable Diagnostics Registry instead for auditing) |
+
+**PowerShell Alternative:**
+
 ```powershell
 # Enable LDAP diagnostics (if not already from LDAP signing audit)
 reg add "HKLM\System\CurrentControlSet\Services\NTDS\Diagnostics" `
@@ -431,6 +501,16 @@ Get-WinEvent -FilterHashtable @{LogName='Directory Service';ID=3039,3040} `
 - Test critical applications using LDAPS
 
 **Mitigation:**
+
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Controllers OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → Security Options | Domain controller: LDAP server channel binding token requirements | Always |
+
+**PowerShell Alternative:**
 
 ```powershell
 # Enable LDAPS channel binding (start with value 1 for compatibility)
@@ -625,6 +705,16 @@ Get-WinEvent -FilterHashtable @{LogName='System';ID=1014,1015} -MaxEvents 100
 
 **Mitigation:**
 
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Environment OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Administrative Templates → Network → DNS Client | Turn off multicast name resolution | Enabled |
+
+**PowerShell Alternative:**
+
 ```powershell
 # Disable LLMNR via Group Policy (preferred)
 # Computer Configuration → Administrative Templates → Network → DNS Client
@@ -700,6 +790,16 @@ Get-WmiObject Win32_NetworkAdapterConfiguration |
 - Most modern environments have no dependencies
 
 **Mitigation:**
+
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Environment OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Scripts → Startup | Startup Properties | Script deploying PowerShell |
+
+**PowerShell Alternative:**
 
 ```powershell
 # Disable NetBIOS over TCP/IP on all network adapters
@@ -796,6 +896,18 @@ Get-WinEvent -FilterHashtable @{LogName='Security';ID=4624} -MaxEvents 1000 |
 - NLA requires pre-authentication (users need valid credentials to connect)
 
 **Mitigation:**
+
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to target OUs (e.g., Servers, Workstations):
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Administrative Templates → Windows Components → Remote Desktop Services → Remote Desktop Session Host → Security | Require user authentication for remote connections by using Network Level Authentication | Enabled |
+| Computer Configuration → Administrative Templates → Windows Components → Remote Desktop Services → Remote Desktop Session Host → Security | Set client connection encryption level | High Level |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Windows Defender Firewall with Advanced Security | Inbound Rules | Restrict RDP port to Admin subnets |
+
+**PowerShell Alternative:**
 
 ```powershell
 # Enable Network Level Authentication (NLA)
@@ -923,6 +1035,17 @@ Get-WinEvent -LogName "Microsoft-Windows-WinRM/Operational" -MaxEvents 100 |
 - Notify administrators of HTTPS-only requirement
 
 **Mitigation:**
+
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to target OUs:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Administrative Templates → Windows Components → Windows Remote Management (WinRM) → WinRM Service | Allow remote server management through WinRM | Disabled (for HTTP), Enable HTTPS via certificate auto-enrollment |
+| Computer Configuration → Administrative Templates → Windows Components → Windows Remote Management (WinRM) → WinRM Client | Trusted Hosts | Specify comma-separated host list |
+
+**PowerShell Alternative:**
 
 ```powershell
 # Step 1: Create HTTPS listener with certificate

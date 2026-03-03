@@ -116,6 +116,16 @@ foreach ($dc in $DCs) {
 
 **Mitigation:**
 
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Controllers OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → System Services | Print Spooler | Disabled |
+
+**PowerShell Alternative:**
+
 ```powershell
 # Disable Print Spooler on all Domain Controllers
 $DCs = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Hostname
@@ -125,10 +135,6 @@ foreach ($dc in $DCs) {
         Set-Service -Name Spooler -StartupType Disabled
     }
 }
-
-# Or via Group Policy (Domain Controllers OU):
-# Computer Configuration → Policies → Windows Settings → Security Settings → System Services
-# "Print Spooler" = Disabled
 ```
 
 **Verification:**
@@ -217,6 +223,23 @@ Get-ADFineGrainedPasswordPolicy -Filter *
 - Consider phased rollout by OU
 
 **Mitigation:**
+
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Root:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy | Minimum password length | 12 characters |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy | Enforce password history | 24 passwords remembered |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy | Password must meet complexity requirements | Enabled |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy | Maximum password age | 90 days |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy | Minimum password age | 1 days |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Account Lockout Policy | Account lockout threshold | 10 invalid logon attempts |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Account Lockout Policy | Account lockout duration | 15 minutes |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Account Lockout Policy | Reset account lockout counter after | 15 minutes |
+
+**PowerShell Alternative:**
 
 ```powershell
 # Set minimum password length to 12 characters
@@ -317,25 +340,20 @@ Get-ADComputer "WS01" | Move-ADObject -TargetPath "OU=LAPS-Pilot,DC=contoso,DC=c
 
 **Note:** Windows Server 2022 includes native Windows LAPS (built-in). No separate installation required.
 
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Target Computers OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Administrative Templates → System → LAPS | Configure password backup directory | Backup the password to Active Directory only |
+| Computer Configuration → Administrative Templates → System → LAPS | Password Settings | Complexity: 4, Length: 14, Age: 30 days |
+| Computer Configuration → Administrative Templates → System → LAPS | Name of administrator account to manage | Administrator |
+
+**PowerShell Alternative:**
+
 ```powershell
-# Configure Windows LAPS via Group Policy:
-# Computer Configuration → Administrative Templates → System → LAPS
-
-# 1. Enable Password Backup
-# Setting: "Configure password backup directory"
-# Value: "Backup the password to Active Directory only"
-
-# 2. Configure Password Settings
-# Setting: "Password Settings"
-# - Password Complexity: 4 (Large + small + numbers + specials)
-# - Password Length: 14
-# - Password Age (Days): 30
-
-# 3. Set Administrator Account Name
-# Setting: "Name of administrator account to manage"
-# Value: "Administrator"
-
-# Alternatively, configure via PowerShell (on target computers):
+# Configure via PowerShell (on target computers):
 New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\LAPS" `
     -Name "BackupDirectory" -Value 2 -PropertyType DWord -Force
 # Value: 1 = Azure AD only, 2 = Active Directory only, 3 = Both
@@ -433,9 +451,21 @@ Get-WinEvent -LogName Security -MaxEvents 1 |
 
 **Mitigation:**
 
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Controllers OU:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Policies → Windows Settings → Security Settings → Advanced Audit Policy Configuration → Account Logon | Credential Validation | Success, Failure |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Advanced Audit Policy Configuration → DS Access | Directory Service Changes | Success, Failure |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Advanced Audit Policy Configuration → Logon/Logoff | Logon | Success, Failure |
+| Computer Configuration → Policies → Windows Settings → Security Settings → Advanced Audit Policy Configuration | (Full list in Appendix D) | Success, Failure |
+
+**PowerShell Alternative:**
+
 ```powershell
 # Apply Advanced Audit Policy via auditpol commands
-# Or via Group Policy: Computer Configuration → Security Settings → Advanced Audit Policy
 
 # Account Logon
 auditpol /set /subcategory:"Credential Validation" /success:enable /failure:enable
@@ -737,6 +767,16 @@ Minimal impact - improves security of UNC connections to domain resources. All m
 
 **Mitigation:**
 
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Root:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Administrative Templates → Network → Network Provider | Hardened UNC Paths | Enabled. Add paths: \\\\*\\SYSVOL (RequireMutualAuthentication=1,RequireIntegrity=1) and \\\\*\\NETLOGON (RequireMutualAuthentication=1,RequireIntegrity=1) |
+
+**PowerShell Alternative:**
+
 ```powershell
 # Configure UNC hardened paths via registry
 New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths" -Force | Out-Null
@@ -748,13 +788,6 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkProvide
 # Require mutual authentication and integrity for NETLOGON
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths" `
     -Name "\\*\NETLOGON" -Value "RequireMutualAuthentication=1,RequireIntegrity=1" -Type String
-
-# Or via Group Policy (preferred):
-# Computer Configuration → Administrative Templates → Network → Network Provider
-# "Hardened UNC Paths" = Enabled
-# Add paths:
-# \\*\SYSVOL     RequireMutualAuthentication=1,RequireIntegrity=1
-# \\*\NETLOGON   RequireMutualAuthentication=1,RequireIntegrity=1
 ```
 
 **Verification:**
@@ -884,6 +917,17 @@ Get-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Mod
 
 **Mitigation:**
 
+**Group Policy Method (Recommended):**
+
+Create or edit a GPO linked to Domain Root:
+
+| Setting Path | Setting Name | Value |
+|---|---|---|
+| Computer Configuration → Administrative Templates → Windows Components → Windows PowerShell | Turn on PowerShell Script Block Logging | Enabled |
+| Computer Configuration → Administrative Templates → Windows Components → Windows PowerShell | Turn on Module Logging | Enabled |
+
+**PowerShell Alternative:**
+
 ```powershell
 # Enable Script Block Logging
 New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Force | Out-Null
@@ -899,11 +943,6 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Mod
 New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging\ModuleNames" -Force | Out-Null
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging\ModuleNames" `
     -Name "*" -Value "*" -Type String
-
-# Or via Group Policy:
-# Computer Configuration → Administrative Templates → Windows Components → Windows PowerShell
-# "Turn on PowerShell Script Block Logging" = Enabled
-# "Turn on Module Logging" = Enabled
 ```
 
 **Verification:**
