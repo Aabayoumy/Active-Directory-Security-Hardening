@@ -17,15 +17,15 @@ This chapter addresses vulnerabilities related to insecure authentication protoc
 6. **Rollback:** Procedure if issues arise
 
 **Protocols Addressed in This Chapter:**
-- 5.2.1 NTLM (NTLMv1/LM ban) — Finding H-02
-- 5.2.2 RPC Coercion (NTLM outbound restrictions) — Finding H-05
-- 5.3.1 LDAP Signing — Finding M-03
-- 5.3.2 LDAPS Channel Binding — Finding M-02
-- 5.3.3 ADCS Web Enrollment (HTTP to HTTPS) — Finding M-04
-- 5.4.1 LLMNR (Link-Local Multicast Name Resolution)
-- 5.4.2 NetBIOS over TCP/IP
-- 5.5.1 Remote Desktop Protocol (RDP) hardening
-- 5.5.2 Windows Remote Management (WinRM) hardening
+- [5.2.1 NTLM (NTLMv1/LM ban) — Finding H-02](#521-ban-ntlmv1lm-authentication)
+- [5.2.2 RPC Coercion (NTLM outbound restrictions) — Finding H-05](#522-mitigate-rpc-coercion-attacks-restrict-ntlm-outbound)
+- [5.3.1 LDAP Signing — Finding M-03](#531-ldap-signing-requirement)
+- [5.3.2 LDAPS Channel Binding — Finding M-02](#532-ldaps-channel-binding)
+- [5.3.3 ADCS Web Enrollment (HTTP to HTTPS) — Finding M-04](#533-secure-adcs-web-enrollment-http-to-https)
+- [5.4.1 LLMNR (Link-Local Multicast Name Resolution)](#541-disable-llmnr-link-local-multicast-name-resolution)
+- [5.4.2 NetBIOS over TCP/IP](#542-disable-netbios-over-tcpip)
+- [5.5.1 Remote Desktop Protocol (RDP) hardening](#551-remote-desktop-protocol-rdp-hardening)
+- [5.5.2 Windows Remote Management (WinRM) hardening](#552-windows-remote-management-winrm-hardening)
 
 ---
 

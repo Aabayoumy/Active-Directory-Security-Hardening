@@ -12,17 +12,17 @@ This chapter addresses security hardening through configuration changes, securit
 - Detection → Audit → Impact Assessment → Mitigation → Verification → Rollback
 
 **Topics Covered:**
-- 6.2.1 Print Spooler service disabling — Finding H-04
-- 6.2.2 Password policy strengthening — Finding H-01
-- 6.2.3 Windows LAPS deployment — Finding H-03
-- 6.3.1 Advanced audit policy implementation — Finding M-01
-- 6.4.1 Admin delegation protection — Finding M-06
-- 6.4.2 Schema Admins group management — Finding M-07
-- 6.5.1 AD Recycle Bin enablement — Finding L-01
-- 6.5.2 UNC hardened paths — Finding M-08
-- 6.5.3 AD Sites and Subnets — Finding M-05
-- 6.6.1 PowerShell logging
-- 6.6.2 Group Managed Service Accounts (gMSA)
+- [6.2.1 Print Spooler service disabling — Finding H-04](#621-disable-print-spooler-on-domain-controllers)
+- [6.2.2 Password policy strengthening — Finding H-01](#622-strengthen-password-policy)
+- [6.2.3 Windows LAPS deployment — Finding H-03](#623-deploy-windows-laps)
+- [6.3.1 Advanced audit policy implementation — Finding M-01](#631-apply-domain-controller-audit-baseline)
+- [6.4.1 Admin delegation protection — Finding M-06](#641-protect-admin-accounts-from-delegation)
+- [6.4.2 Schema Admins group management — Finding M-07](#642-empty-schema-admins-group)
+- [6.5.1 AD Recycle Bin enablement — Finding L-01](#651-enable-ad-recycle-bin)
+- [6.5.2 UNC hardened paths — Finding M-08](#652-configure-unc-hardened-paths)
+- [6.5.3 AD Sites and Subnets — Finding M-05](#653-configure-ad-sites-and-subnets)
+- [6.6.1 PowerShell logging](#661-enable-powershell-script-block-logging)
+- [6.6.2 Group Managed Service Accounts (gMSA)](#662-implement-group-managed-service-accounts-gmsa)
 
 ---
 
