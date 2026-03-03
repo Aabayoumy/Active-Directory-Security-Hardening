@@ -148,7 +148,7 @@ Windows Server 2022 ships with minimal password requirements:
 Windows Server 2008+ supports multiple password policies per domain:
 - Different policies for user groups (e.g., administrators vs. standard users)
 - Higher security requirements for privileged accounts
-- Configured via PowerShell or ADSI Edit
+- Configured via The Active Directory Administrative Center (ADAC) or PowerShell
 
 ### 2.2.3 Secure Directory Access (LDAP/LDAPS)
 
