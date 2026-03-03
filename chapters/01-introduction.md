@@ -6,7 +6,7 @@
 
 ## 1.1 Overview
 
-Active Directory (AD) is the cornerstone identity and access management system for modern enterprise IT environments. As organizations increasingly rely on AD for authentication, authorization, and resource management, ensuring its security becomes paramount. Windows Server 2022 (November 2025 build) represents Microsoft's latest server platform, yet even with modern security features, default Active Directory installations contain numerous security risks that require systematic assessment and remediation.
+Active Directory (AD) is the cornerstone identity and access management system for modern enterprise IT environments. As organizations increasingly rely on AD for authentication, authorization, and resource management, ensuring its security becomes paramount. Windows Server 2022 (November 2025 build) represents Microsoft's server platform, yet even with modern security features, default Active Directory installations contain numerous security risks that require systematic assessment and remediation.
 
 This project focuses on **configuration assessment and hardening** of a freshly installed Active Directory forest, identifying security vulnerabilities inherent in default configurations and legacy protocol support. The work emphasizes practical, business-aware remediation strategies rather than theoretical exploitation scenarios.
 
