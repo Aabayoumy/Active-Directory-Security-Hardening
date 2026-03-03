@@ -133,21 +133,25 @@ Assessment of default Windows Server 2022 AD forest revealed:
 2. **[Literature Review](chapters/02-literature-review.md)** - Background on AD security challenges
 3. **[Lab Environment](chapters/03-lab-environment.md)** - Infrastructure setup and design
 4. **[Security Assessment](chapters/04-security-assessment.md)** - PingCastle findings and risk analysis
-5. **[Protocol Mitigation](chapters/05-protocol-mitigation.md)** - Hardening insecure protocols (NTLM, LDAP, RPC, LLMNR)
+5. **[Protocol Mitigation](chapters/05-protocol-remediation.md)** - Hardening insecure protocols (NTLM, LDAP, RPC, LLMNR)
 6. **[Configuration Hardening](chapters/06-configuration-hardening.md)** - System configs and security features
-7. **[Compliance & Frameworks](chapters/07-compliance-frameworks.md)** - ISO 27001 and MITRE ATT&CK mapping
-8. **[Discussion](chapters/08-discussion.md)** - Analysis and best practices
+7. **[Additional Hardening Actions](chapters/07-additional-hardening-actions.md)** - RDP, WinRM, and gMSA implementations
+8. **[Results and Analysis](chapters/08-results-analysis.md)** - Analysis and security posture improvement
 9. **[Conclusion](chapters/09-conclusion.md)** - Summary and future work
+10. **[References](chapters/10-references.md)** - Citations and resources
+
+### Additional Hardening
+
+- **[RDP & WinRM Hardening Guide](additional-hardening/rdp-winrm-guide.md)** - Detailed implementation guide
+- **[gMSA Deployment Guide](additional-hardening/gmsa-guide.md)** - Group Managed Service Accounts guide
 
 ### Appendices
 
 - **[Appendix A: Gantt Chart](appendices/appendix-a-gantt-chart.md)** - Project timeline
-- **[Appendix B: RDP & WinRM Hardening](appendices/appendix-b-rdp-winrm.md)** - Detailed implementation guide
-- **[Appendix C: PowerShell Scripts](appendices/appendix-c-powershell-scripts.md)** - Complete script library
-- **[Appendix D: GPO Templates](appendices/appendix-d-gpo-templates.md)** - Group Policy configurations
-- **[Appendix E: PingCastle Analysis](appendices/appendix-e-pingcastle.md)** - Tool methodology
-- **[Appendix F: Event Monitoring](appendices/appendix-f-event-monitoring.md)** - SIEM integration guide
-- **[Appendix G: Risk Matrix](appendices/appendix-g-risk-matrix.md)** - Assessment methodology
+- **[Appendix D: PowerShell Scripts](appendices/appendix-d-powershell-scripts.md)** - Complete script library
+- **[Appendix E: GPO Templates](appendices/appendix-e-gpo-templates.md)** - Group Policy configurations
+- **[Appendix F: Lab Topology](appendices/appendix-f-lab-topology.md)** - Lab network topology
+- **[Appendix G: Compliance Mapping](appendices/appendix-g-compliance-mapping.md)** - Compliance mapping
 - **[Appendix H: VAPT Report](appendices/appendix-h-vapt-report.md)** - Complete assessment report
 
 ### Scripts & Resources
@@ -186,9 +190,9 @@ Assessment of default Windows Server 2022 AD forest revealed:
 ### Implementing Remediations
 
 Follow the phased approach documented in:
-- [Phase 1: Critical (0-7 days)](chapters/05-protocol-mitigation.md#phase-1-critical-protocol-mitigations-0-7-days)
+- [Phase 1: Critical (0-7 days)](chapters/05-protocol-remediation.md#phase-1-critical-protocol-mitigations-0-7-days)
 - [Phase 2: High Priority (7-14 days)](chapters/06-configuration-hardening.md#phase-2-high-priority-configurations-7-14-days)
-- [Phase 3: Medium Priority (14-30 days)](chapters/05-protocol-mitigation.md#phase-3-ldap-protocol-security-14-30-days)
+- [Phase 3: Medium Priority (14-30 days)](chapters/05-protocol-remediation.md#phase-3-ldap-protocol-security-14-30-days)
 - [Phase 4: Additional Hardening (30-90 days)](chapters/06-configuration-hardening.md#phase-4-additional-security-features-30-90-days)
 
 **⚠️ Important:** Always enable audit mode first before enforcement! See [Detection-First Methodology](chapters/08-discussion.md#detection-first-methodology).

@@ -1,6 +1,6 @@
 [← Back to Main](../README.md)
 
-# Appendix B: Secure RDP and WinRM Implementation Guide
+# Secure RDP and WinRM Implementation Guide
 
 ## Comprehensive Guide to Remote Access Protocol Hardening
 

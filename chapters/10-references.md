@@ -1,6 +1,6 @@
-# Chapter 9: References
+# Chapter 10: References
 
-[← Previous: Conclusion and Future Work](08-conclusion.md) | [Back to Main →](../README.md)
+[← Previous: Conclusion and Future Work](09-conclusion.md) | [Back to Main →](../README.md)
 
 ---
 
@@ -249,7 +249,7 @@ This project benefits from the broader security research community. Special ackn
 
 ---
 
-[← Previous: Conclusion and Future Work](08-conclusion.md) | [Back to Main →](../README.md)
+[← Previous: Conclusion and Future Work](09-conclusion.md) | [Back to Main →](../README.md)
 
 ---
 

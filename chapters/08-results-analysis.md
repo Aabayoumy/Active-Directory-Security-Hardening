@@ -1,6 +1,6 @@
-# Chapter 7: Results and Analysis
+# Chapter 8: Results and Analysis
 
-[← Previous: Configuration Hardening and Security Enhancements](06-configuration-hardening.md) | [Next: Conclusion and Future Work →](08-conclusion.md)
+[← Previous: Additional Hardening Actions](07-additional-hardening-actions.md) | [Next: Conclusion and Future Work →](09-conclusion.md)
 
 ---
 
@@ -10,9 +10,9 @@ This chapter analyzes the results of implementing the security hardening measure
 
 ---
 
-## 7.1 Security Posture Improvement
+## 8.1 Security Posture Improvement
 
-### 7.1.1 Risk Reduction Summary
+### 8.1.1 Risk Reduction Summary
 
 The comprehensive hardening implementation addressed all 14 findings identified in the PingCastle assessment:
 
@@ -33,7 +33,7 @@ The comprehensive hardening implementation addressed all 14 findings identified 
 - **Critical Vulnerabilities:** 0 HIGH-risk findings remaining
 - **Security Posture:** Aligned with ISO 27001:2022 and MITRE ATT&CK best practices
 
-### 7.1.2 Remediation Breakdown by Category
+### 8.1.2 Remediation Breakdown by Category
 
 **Authentication & Protocol Security:**
 - ✓ NTLMv1/LM authentication disabled (enforced NTLMv2 minimum)
@@ -73,9 +73,9 @@ The comprehensive hardening implementation addressed all 14 findings identified 
 
 ---
 
-## 7.2 Detection-First Methodology Effectiveness
+## 8.2 Detection-First Methodology Effectiveness
 
-### 7.2.1 Audit Mode Success Metrics
+### 8.2.1 Audit Mode Success Metrics
 
 The audit-first approach proved highly effective in preventing business disruptions:
 
@@ -103,7 +103,7 @@ The audit-first approach proved highly effective in preventing business disrupti
 - **Action:** Immediate disablement
 - **Outcome:** Zero impact (as expected)
 
-### 7.2.2 Business Continuity Achievement
+### 8.2.2 Business Continuity Achievement
 
 **Key Success Metrics:**
 
@@ -126,9 +126,9 @@ The audit-first approach proved highly effective in preventing business disrupti
 
 ---
 
-## 7.3 Framework Compliance Achievements
+## 8.3 Framework Compliance Achievements
 
-### 7.3.1 ISO/IEC 27001:2022 Control Coverage
+### 8.3.1 ISO/IEC 27001:2022 Control Coverage
 
 **Before Hardening:**
 
@@ -155,7 +155,7 @@ The audit-first approach proved highly effective in preventing business disrupti
 - ✓ **8.15 (Logging):** Advanced audit policies, PowerShell logging
 - ✓ **8.24 (Cryptography):** LDAPS, HTTPS, encrypted RDP/WinRM
 
-### 7.3.2 MITRE ATT&CK Technique Mitigation
+### 8.3.2 MITRE ATT&CK Technique Mitigation
 
 **Adversary Techniques Mitigated:**
 
@@ -174,9 +174,9 @@ The audit-first approach proved highly effective in preventing business disrupti
 
 ---
 
-## 7.4 Challenges and Solutions
+## 8.4 Challenges and Solutions
 
-### 7.4.1 Technical Challenges
+### 8.4.1 Technical Challenges
 
 **Challenge 1: Legacy Application NTLM Dependencies**
 
@@ -221,7 +221,7 @@ The audit-first approach proved highly effective in preventing business disrupti
 
 ---
 
-### 7.4.2 Organizational Challenges
+### 8.4.2 Organizational Challenges
 
 **Challenge 1: Stakeholder Communication**
 
@@ -252,9 +252,9 @@ The audit-first approach proved highly effective in preventing business disrupti
 
 ---
 
-## 7.5 Performance Impact Analysis
+## 8.5 Performance Impact Analysis
 
-### 7.5.1 System Performance
+### 8.5.1 System Performance
 
 **Domain Controller CPU Usage:**
 
@@ -290,7 +290,7 @@ The audit-first approach proved highly effective in preventing business disrupti
 
 ---
 
-### 7.5.2 Network Traffic Analysis
+### 8.5.2 Network Traffic Analysis
 
 **LDAP Traffic:**
 - Signed LDAP adds ~15% overhead compared to unsigned
@@ -305,9 +305,9 @@ The audit-first approach proved highly effective in preventing business disrupti
 
 ---
 
-## 7.6 Security Monitoring and Visibility
+## 8.6 Security Monitoring and Visibility
 
-### 7.6.1 Enhanced Security Event Collection
+### 8.6.1 Enhanced Security Event Collection
 
 **Before Hardening:**
 - **Daily Security Events:** ~5,000 events/day per DC
@@ -329,7 +329,7 @@ The audit-first approach proved highly effective in preventing business disrupti
 | NTLM Usage (Post-Restriction) | 8004, 8005, 8006 | Identify remaining NTLM usage |
 | PowerShell Execution | 4104 | Detect malicious scripts |
 
-### 7.6.2 Alerting Capabilities
+### 8.6.2 Alerting Capabilities
 
 **High-Priority Alerts Configured:**
 
@@ -355,9 +355,9 @@ The audit-first approach proved highly effective in preventing business disrupti
 
 ---
 
-## 7.7 Lessons Learned and Best Practices
+## 8.7 Lessons Learned and Best Practices
 
-### 7.7.1 Successful Strategies
+### 8.7.1 Successful Strategies
 
 **1. Audit-First Approach**
 - **Success Factor:** Zero business disruptions during implementation
@@ -379,7 +379,7 @@ The audit-first approach proved highly effective in preventing business disrupti
 - **Best Practice:** Present PingCastle findings and risk data to justify changes
 - **Recommendation:** Include application owners in audit phase to identify dependencies
 
-### 7.7.2 Areas for Improvement
+### 8.7.2 Areas for Improvement
 
 **1. Certificate Management**
 - **Gap:** Some systems lacked certificates for HTTPS-only protocols
@@ -418,7 +418,7 @@ The detection-first methodology successfully balanced security improvement with 
 
 ---
 
-[← Previous: Configuration Hardening and Security Enhancements](06-configuration-hardening.md) | [Next: Conclusion and Future Work →](08-conclusion.md)
+[← Previous: Additional Hardening Actions](07-additional-hardening-actions.md) | [Next: Conclusion and Future Work →](09-conclusion.md)
 
 ---
 

@@ -1,6 +1,6 @@
 # Chapter 6: Configuration Hardening and Security Enhancements
 
-[← Previous: Mitigating Insecure Protocols and Authentication](05-protocol-remediation.md) | [Next: Results and Analysis →](07-results-analysis.md)
+[← Previous: Mitigating Insecure Protocols and Authentication](05-protocol-remediation.md) | [Next: Additional Hardening Actions →](07-additional-hardening-actions.md)
 
 ---
 
@@ -1103,7 +1103,7 @@ All changes followed audit-first methodology with documented rollback procedures
 
 ---
 
-[← Previous: Mitigating Insecure Protocols and Authentication](05-protocol-remediation.md) | [Next: Results and Analysis →](07-results-analysis.md)
+[← Previous: Mitigating Insecure Protocols and Authentication](05-protocol-remediation.md) | [Next: Additional Hardening Actions →](07-additional-hardening-actions.md)
 
 ---
 

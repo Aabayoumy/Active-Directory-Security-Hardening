@@ -1,10 +1,10 @@
-# Chapter 8: Conclusion and Future Work
+# Chapter 9: Conclusion and Future Work
 
-[← Previous: Results and Analysis](07-results-analysis.md) | [Next: References →](09-references.md)
+[← Previous: Results and Analysis](08-results-analysis.md) | [Next: References →](10-references.md)
 
 ---
 
-## 8.1 Project Summary
+## 9.1 Project Summary
 
 This project successfully assessed and hardened a default Active Directory installation on Windows Server 2022 (November 2025 build) using a detection-first, audit-centric methodology. The work focused on configuration assessment and systematic remediation rather than penetration testing or simulated attacks.
 
@@ -74,11 +74,11 @@ This project successfully assessed and hardened a default Active Directory insta
 
 ---
 
-## 8.2 Project Contributions
+## 9.2 Project Contributions
 
 This project contributes to Active Directory security research and practice in several key areas:
 
-### 8.2.1 Detection-First Framework for AD Hardening
+### 9.2.1 Detection-First Framework for AD Hardening
 
 **Contribution:** A systematic, business-aware approach to AD hardening that prioritizes audit mode and impact assessment before enforcement.
 
@@ -95,7 +95,7 @@ This project contributes to Active Directory security research and practice in s
 - Detection-first balances security improvement with business continuity
 - Zero business disruptions achieved in this implementation
 
-### 8.2.2 Practical, Phased Remediation Roadmap
+### 9.2.2 Practical, Phased Remediation Roadmap
 
 **Contribution:** Risk-based timeline for AD hardening with realistic implementation phases:
 
@@ -109,7 +109,7 @@ This project contributes to Active Directory security research and practice in s
 - Timeline accounts for audit periods, testing, and stakeholder approval
 - Aligned with common change management cycles (monthly maintenance windows)
 
-### 8.2.3 Integration of ISO 27001:2022 and MITRE ATT&CK Frameworks
+### 9.2.3 Integration of ISO 27001:2022 and MITRE ATT&CK Frameworks
 
 **Contribution:** Mapping of AD security controls to both compliance frameworks and adversary techniques:
 
@@ -127,7 +127,7 @@ This project contributes to Active Directory security research and practice in s
 
 **Value:** Organizations can justify security investments using compliance requirements (ISO 27001) while mapping to real-world attack techniques (MITRE ATT&CK).
 
-### 8.2.4 Comprehensive Configuration Assessment Approach
+### 9.2.4 Comprehensive Configuration Assessment Approach
 
 **Contribution:** Demonstrates effective use of automated tools (PingCastle) for AD security assessment without requiring penetration testing skills or attack simulation.
 
@@ -139,7 +139,7 @@ This project contributes to Active Directory security research and practice in s
 
 **Limitation Acknowledged:** Configuration assessment complements but does not replace penetration testing for comprehensive security validation.
 
-### 8.2.5 Balance Between Security Improvement and Operational Continuity
+### 9.2.5 Balance Between Security Improvement and Operational Continuity
 
 **Contribution:** Practical demonstration that significant security improvements can be achieved without business disruption when proper methodology is followed.
 
@@ -159,11 +159,11 @@ This project contributes to Active Directory security research and practice in s
 
 ---
 
-## 8.3 Limitations
+## 9.3 Limitations
 
 This project was conducted within specific constraints that limit generalizability:
 
-### 8.3.1 Lab Environment vs. Production
+### 9.3.1 Lab Environment vs. Production
 
 **Limitation:** All work conducted in isolated 4-system lab environment (2 DCs, 1 CA, 1 workstation).
 
@@ -179,7 +179,7 @@ This project was conducted within specific constraints that limit generalizabili
 - More stakeholders and longer approval cycles
 - Potential for undiscovered dependencies during audit phase
 
-### 8.3.2 Scope Limited to Default Windows Server 2022 November 2025 Build
+### 9.3.2 Scope Limited to Default Windows Server 2022 November 2025 Build
 
 **Limitation:** Assessment and hardening focused on fresh AD installation with default Microsoft configurations.
 
@@ -194,7 +194,7 @@ This project was conducted within specific constraints that limit generalizabili
 - Hybrid environments require additional security controls (Conditional Access, etc.)
 - Multi-forest or forest trust scenarios not covered
 
-### 8.3.3 Automated Tool Limitations (PingCastle Rule-Based Detection)
+### 9.3.3 Automated Tool Limitations (PingCastle Rule-Based Detection)
 
 **Limitation:** PingCastle uses rule-based configuration analysis, which may miss complex or custom vulnerabilities.
 
@@ -213,7 +213,7 @@ This project was conducted within specific constraints that limit generalizabili
 
 **Mitigation:** PingCastle should be complemented with manual security reviews and periodic penetration testing.
 
-### 8.3.4 No Active Exploitation or Attack Simulation Performed
+### 9.3.4 No Active Exploitation or Attack Simulation Performed
 
 **Limitation:** This project used configuration assessment only (no penetration testing, no simulated attacks).
 
@@ -228,7 +228,7 @@ This project was conducted within specific constraints that limit generalizabili
 - Attack simulation (e.g., Atomic Red Team) to verify monitoring alerts
 - Breach and attack simulation (BAS) tools
 
-### 8.3.5 Scope Limited to On-Premises AD
+### 9.3.5 Scope Limited to On-Premises AD
 
 **Limitation:** No coverage of hybrid or cloud-native identity scenarios.
 
@@ -244,9 +244,9 @@ This project was conducted within specific constraints that limit generalizabili
 
 ---
 
-## 8.4 Future Work Recommendations
+## 9.4 Future Work Recommendations
 
-### 8.4.1 Azure AD/Entra ID Hybrid Environment Hardening
+### 9.4.1 Azure AD/Entra ID Hybrid Environment Hardening
 
 **Opportunity:** Extend hardening framework to hybrid identity scenarios.
 
@@ -260,7 +260,7 @@ This project was conducted within specific constraints that limit generalizabili
 
 **Value:** Most organizations now operate in hybrid mode, requiring cloud identity hardening.
 
-### 8.4.2 Active Directory Manual Penetration Testing
+### 9.4.2 Active Directory Manual Penetration Testing
 
 **Opportunity:** Validate hardening effectiveness through controlled attack simulation.
 
@@ -277,7 +277,7 @@ This project was conducted within specific constraints that limit generalizabili
 
 **Value:** Empirical validation that configurations prevent actual exploitation.
 
-### 8.4.3 Advanced Threat Detection with EDR Integration
+### 9.4.3 Advanced Threat Detection with EDR Integration
 
 **Opportunity:** Enhance detection capabilities through Endpoint Detection and Response (EDR) integration.
 
@@ -290,7 +290,7 @@ This project was conducted within specific constraints that limit generalizabili
 
 **Value:** Configuration hardening prevents attacks; EDR detects and responds to attacks that bypass preventive controls.
 
-### 8.4.4 Tiered Administration Model Implementation
+### 9.4.4 Tiered Administration Model Implementation
 
 **Opportunity:** Implement full administrative tier model (Tier 0/1/2) for privileged access management.
 
@@ -307,7 +307,7 @@ This project was conducted within specific constraints that limit generalizabili
 
 **Value:** Prevents credential theft and lateral movement by isolating privileged credentials.
 
-### 8.4.5 Privileged Access Workstation (PAW) Deployment
+### 9.4.5 Privileged Access Workstation (PAW) Deployment
 
 **Opportunity:** Deploy dedicated administrative workstations for Tier 0 access.
 
@@ -320,7 +320,7 @@ This project was conducted within specific constraints that limit generalizabili
 
 **Value:** Isolates privileged credentials from endpoint threats (phishing, malware).
 
-### 8.4.6 Regular Security Assessments Program
+### 9.4.6 Regular Security Assessments Program
 
 **Opportunity:** Establish quarterly security assessment cadence.
 
@@ -333,7 +333,7 @@ This project was conducted within specific constraints that limit generalizabili
 
 **Value:** Security is not a one-time project. Regular assessments ensure configurations remain hardened and identify new risks.
 
-### 8.4.7 Zero Trust Architecture Evolution
+### 9.4.7 Zero Trust Architecture Evolution
 
 **Opportunity:** Evolve AD security toward Zero Trust principles.
 
@@ -351,7 +351,7 @@ This project was conducted within specific constraints that limit generalizabili
 
 **Value:** Align AD security with modern Zero Trust architecture.
 
-### 8.4.8 Integration with Identity Protection Solutions
+### 9.4.8 Integration with Identity Protection Solutions
 
 **Opportunity:** Leverage AI/ML-based identity threat detection.
 
@@ -365,7 +365,7 @@ This project was conducted within specific constraints that limit generalizabili
 
 ---
 
-## 8.5 Final Recommendations
+## 9.5 Final Recommendations
 
 ### For IT Organizations Hardening Active Directory:
 
@@ -417,7 +417,7 @@ This project was conducted within specific constraints that limit generalizabili
 
 ---
 
-## 8.6 Concluding Remarks
+## 9.6 Concluding Remarks
 
 This project demonstrated that significant Active Directory security improvements can be achieved through systematic configuration assessment and audit-first remediation, without requiring penetration testing or causing business disruption.
 
@@ -445,7 +445,7 @@ Active Directory remains the foundation of enterprise identity management. Secur
 
 ---
 
-[← Previous: Results and Analysis](07-results-analysis.md) | [Next: References →](09-references.md)
+[← Previous: Results and Analysis](08-results-analysis.md) | [Next: References →](10-references.md)
 
 ---
 

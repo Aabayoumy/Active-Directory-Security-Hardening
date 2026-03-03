@@ -1,6 +1,6 @@
 [← Back to Main](../README.md)
 
-# Appendix C: Group Managed Service Accounts (gMSA) Implementation Guide
+# Group Managed Service Accounts (gMSA) Implementation Guide
 
 ## Comprehensive gMSA Deployment and Management
 
