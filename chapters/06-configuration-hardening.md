@@ -22,7 +22,6 @@ This chapter addresses security hardening through configuration changes, securit
 - [6.5.2 UNC hardened paths — Finding M-08](#652-configure-unc-hardened-paths)
 - [6.5.3 AD Sites and Subnets — Finding M-05](#653-configure-ad-sites-and-subnets)
 - [6.6.1 PowerShell logging](#661-enable-powershell-script-block-logging)
-- [6.6.2 Group Managed Service Accounts (gMSA)](#662-implement-group-managed-service-accounts-gmsa)
 
 ---
 
@@ -967,90 +966,6 @@ Remove-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBl
 Remove-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging" -Recurse -Force
 ```
 
----
-
-### 6.6.2 Implement Group Managed Service Accounts (gMSA)
-
-**Risk:** Traditional service accounts with static passwords vulnerable to credential theft.
-
-**Detection:**
-
-```powershell
-# Check if KDS root key exists (required for gMSA)
-Get-KdsRootKey
-
-# Check existing service accounts
-Get-ADUser -Filter {ServicePrincipalName -like "*"} -Properties ServicePrincipalName | 
-    Select-Object Name, SamAccountName, ServicePrincipalName
-```
-
-**Audit First:**
-
-```powershell
-# Identify service accounts to migrate to gMSA
-# Plan migration per service
-# Document applications using service accounts
-```
-
-**Mitigation:**
-
-```powershell
-# Step 1: Create KDS root key (required for gMSA)
-# NOTE: In production, key takes 10 hours to replicate. For testing, use -EffectiveImmediately
-Add-KdsRootKey -EffectiveTime ((Get-Date).AddHours(-10))
-
-# Step 2: Create security group for servers that will use gMSA
-New-ADGroup -Name "WebServers-Group" -GroupScope Global -GroupCategory Security `
-    -Path "OU=Groups,DC=contoso,DC=com"
-
-# Add member servers to group
-Add-ADGroupMember -Identity "WebServers-Group" -Members (Get-ADComputer "WS01")
-
-# Step 3: Create gMSA
-New-ADServiceAccount -Name "svc-webapp-gmsa" `
-    -DNSHostName "webapp.contoso.com" `
-    -PrincipalsAllowedToRetrieveManagedPassword "WebServers-Group" `
-    -ServicePrincipalNames "HTTP/webapp.contoso.com"
-
-# Step 4: Install gMSA on target server
-Invoke-Command -ComputerName WS01 -ScriptBlock {
-    Install-ADServiceAccount -Identity "svc-webapp-gmsa"
-}
-
-# Step 5: Configure service to use gMSA
-# In Services.msc, set service logon to: contoso\svc-webapp-gmsa$
-# Leave password blank (gMSA manages password automatically)
-```
-
-**Verification:**
-
-```powershell
-# Verify gMSA created
-Get-ADServiceAccount -Filter * | Select-Object Name, Enabled, ServicePrincipalNames
-
-# Verify gMSA installed on server
-Invoke-Command -ComputerName WS01 -ScriptBlock {
-    Test-ADServiceAccount -Identity "svc-webapp-gmsa"
-}
-# Expected: True
-
-# Verify password rotation (automatic, 30-day cycle by default)
-Get-ADServiceAccount "svc-webapp-gmsa" -Properties PrincipalsAllowedToRetrieveManagedPassword
-```
-
-**Rollback:**
-
-```powershell
-# Remove gMSA from server
-Invoke-Command -ComputerName WS01 -ScriptBlock {
-    Uninstall-ADServiceAccount -Identity "svc-webapp-gmsa"
-}
-
-# Remove gMSA from AD
-Remove-ADServiceAccount -Identity "svc-webapp-gmsa" -Confirm:$false
-```
-
----
 
 ## 6.7 Configuration Hardening Summary
 
@@ -1070,7 +985,6 @@ This chapter detailed the following configuration hardening measures:
 | UNC hardened paths | M-08 | MEDIUM | Registry / GPO | 30-90 days |
 | AD Sites and Subnets | M-05 | MEDIUM | AD topology | 30-90 days |
 | PowerShell logging | — | Enhancement | Script block logging | 30-90 days |
-| gMSA implementation | — | Enhancement | Service account security | 30-90 days |
 
 ### Compliance Achievements
 
